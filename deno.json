@@ -1,0 +1,12 @@
+{
+  "nodeModulesDir": "auto",
+  "imports": {
+    "@noble/hashes/sha256": "npm:@noble/hashes@1.4.0/sha256"
+  },
+  "tasks": {
+    "types":    "deno run --allow-all src/personality_types.boo.ts --demo",
+    "twigs":    "deno run --allow-all src/tm_twigs.boo.ts --demo",
+    "governor": "deno run --allow-all src/personality_governor.boo.ts --demo",
+    "check":    "deno check src/*.ts src/*.boo.ts"
+  }
+}

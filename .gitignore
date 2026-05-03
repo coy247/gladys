@@ -1,0 +1,20 @@
+node_modules/
+.deno/
+deno.lock
+logs/
+*.log
+.DS_Store
+.env
+.env.*
+*.local
+
+# Claude Code session files
+.claude/
+
+# Runtime artifacts
+dist/
+build/
+coverage/
+
+# OS
+Thumbs.db
