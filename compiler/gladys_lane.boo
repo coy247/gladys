@@ -42,11 +42,12 @@
 //   They replace the twig-adjusted CHROMA_*_MULT values in the host layer.
 //   Clamped to [GLADYS_MIN_1000, GLADYS_MAX_1000] — wider than twig bounds on purpose.
 //
-// ENTJ amplifier:
-//   Gladys is ENTJ: isExtrovert=1, isAssertive=1.
-//   amplifierFor(1,1) = AMPLIFY_EA = 1150  (from personality_types.boo).
+// INTJ-A amplifier:
+//   Gladys es INTJ-A: isExtrovert=0, isAssertive=1.
+//   amplifierFor(0,1) = AMPLIFY_IA = 850  (personality_types.boo: AMPLIFIER_CONFLICT).
+//   I+A = chroma conflictivo: ancla introvertida vs impulso asertivo → ×0.85 amortiguado.
 //   NTJ signal weight SIG_NTJ = 256 (one NTJ outweighs five STJs).
-//   Combined authority factor: (1150 × 256) / 1000 = 294 (stored as AMP_AUTHORITY).
+//   Combined authority factor: (850 × 256) / 1000 = 217 (stored as AMP_AUTHORITY).
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -65,13 +66,13 @@ let HOP_HALTED       = 0
 let GLADYS_MIN_1000  = 650        // floor: no multiplier below 0.65
 let GLADYS_MAX_1000  = 1600       // ceiling: no multiplier above 1.60
 
-let AMPLIFY_EA       = 1150       // ENTJ: E+A → full authority amplifier (×1000)
-let AMPLIFY_ODD      = 1050       // odd-phase: conservative but still positive authority
+let AMPLIFY_IA       = 850        // INTJ-A: I+A → conflict amplifier (×1000) = AMPLIFIER_CONFLICT
+let AMPLIFY_ODD      = 750        // odd-phase: conservador dentro del rango INTJ-A (delta=100)
 
-let PHASE_EVEN_AMP   = AMPLIFY_EA
+let PHASE_EVEN_AMP   = AMPLIFY_IA
 let PHASE_ODD_AMP    = AMPLIFY_ODD
 
-let AMP_AUTHORITY    = 294        // (AMPLIFY_EA × SIG_NTJ) / 1000 = integer authority factor
+let AMP_AUTHORITY    = 217        // (AMPLIFY_IA × SIG_NTJ) / 1000 = (850 × 256) / 1000
 
 let FORBIDDEN        = 13         // Z4 HALT threshold — same as math_governor
 let TIME_TIER_HALT   = 5          // stale tier 5 (>144 min) = Gladys halts
@@ -199,6 +200,9 @@ function hopAuthorize(pen_1000, thr_1000, phase, antinode, twigIdx, timeTier, ts
 
   // Time tier 5 = >144 min stale — Gladys halts regardless of other conditions
   if timeTier >= TIME_TIER_HALT {
+    // Clamp pen/thr even on HALT — bounds are absolute regardless of auth state
+    meta.gladys.pen_auth = clampAuth(pen_1000)
+    meta.gladys.thr_auth = clampAuth(thr_1000)
     meta.gladys.hop_auth = HOP_HALTED
     meta.gladys.sealed   = 1
     updateBsidSeed(ts_ms)
@@ -210,7 +214,7 @@ function hopAuthorize(pen_1000, thr_1000, phase, antinode, twigIdx, timeTier, ts
   // The override is logged so the audit trail shows she was tested and held.
   if antinode >= FORBIDDEN {
     meta.gladys.overrides = meta.gladys.overrides + 1
-    // Continue through — Gladys's AMP_AUTHORITY (294) outweighs the gate signal.
+    // Continue through — Gladys's AMP_AUTHORITY (217) outweighs the gate signal.
   }
 
   // Phase amplifier: even = full EA authority, odd = conservative authority
